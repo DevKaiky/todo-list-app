@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do list</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Bem-vindo ao To-Do List</h1>
+        <p class="text-center">Adicione, gerencie e organize suas tarefas aqui</p>
+
+        <!-- Contêiner para mensagens -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+        
+
+        <!-- Formulário para adicionar tarefas -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <h2 class="card-title">Adicionar Nova Tarefa</h2>
+                <form action="/add-task" method="POST" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="title" class="form-control" placeholder="Título da tarefa" required>
+                    </div>
+                    <div class="col-md-6">
+                        <textarea name="description" class="form-control" placeholder="Descrição (opcional)"></textarea>
+                    </div>
+                    <div class="col-md-12 text-center">
+                        <button type="submit" class="btn btn-primary w-50">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="export-tasks mb-4">
+            <a href="{{ url_for('main.export_tasks') }}" class="btn btn-info">Exportar Tarefas para CSV</a>
+        </div>
+        
+
+        <!-- Filtros de Tarefas -->
+<div class="task-filters mb-4">
+    <a href="{{ url_for('main.filter_tasks', filter_type='all') }}">
+        <button class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+            Todas
+        </button>
+    </a>
+    <a href="{{ url_for('main.filter_tasks', filter_type='completed') }}">
+        <button class="btn {% if filter_type == 'completed' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+            Completas
+        </button>
+    </a>
+    <a href="{{ url_for('main.filter_tasks', filter_type='incomplete') }}">
+        <button class="btn {% if filter_type == 'incomplete' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+            Incompletas
+        </button>
+    </a>
+</div>
+
+<!-- Lista de tarefas -->
+<div class="card shadow">
+    <div class="card-body">
+        <h2 class="card-title">
+            Suas Tarefas - 
+            {% if filter_type == 'completed' %}
+                Completas
+            {% elif filter_type == 'incomplete' %}
+                Incompletas
+            {% else %}
+                Todas
+            {% endif %}
+        </h2>
+        <ul class="list-group">
+            {% for task in tasks %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span style="text-decoration: {% if task.completed %}line-through{% endif %};">
+                    <strong>{{ task.title }}</strong>: {{ task.description or "Sem Descrição" }}
+                </span>
+                <div>
+                    <form action="/complete-task/{{ task.id }}" method="POST" style="display: inline;">
+                        <button type="submit" 
+                            class="btn {% if task.completed %}btn-secondary{% else %}btn-success{% endif %} btn-sm">
+                            {% if task.completed %}Desmarcar{% else %}Concluir{% endif %}
+                        </button>
+                    </form>
+                    <a href="{{ url_for('main.edit_task', task_id=task.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <form action="/delete-task/{{ task.id }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validação do Formulário
+        document.querySelector('form[action="/add-task"]').addEventListener('submit', function (e) {
+            const title = this.querySelector('input[name="title"]').value.trim();
+            if (!title) {
+                alert('O título da tarefa não pode estar vazio!');
+                e.preventDefault();
+            }
+        });
+    
+        // Mostrar mensagem de confirmação ao concluir/excluir tarefas
+        const taskButtons = document.querySelectorAll('form[action^="/complete-task"], form[action^="/delete-task"]');
+        taskButtons.forEach(buttonForm => {
+            buttonForm.addEventListener('submit', function (e) {
+                const action = buttonForm.getAttribute('action').includes('complete-task') ? 'concluída' : 'excluída';
+                if (!confirm(`Você tem certeza que deseja marcar esta tarefa como ${action}?`)) {
+                    e.preventDefault();
+                }
+            });
+        });
+    
+        // Animação ao Concluir/Excluir Tarefa
+        const listItems = document.querySelectorAll('.list-group-item');
+        listItems.forEach(item => {
+            const buttons = item.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function () {
+                    item.style.transition = 'opacity 0.3s ease-out';
+                    item.style.opacity = '0.5'; // Visual feedback
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
