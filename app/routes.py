@@ -180,3 +180,17 @@ def logout():
     session.pop('user_id', None)
     flash('Você saiu.', 'success')
     return redirect(url_for('main.login'))
+
+@main.route('/filter/<filter_type>')
+def filter_tasks(filter_type):
+    if not g.user:
+        return redirect(url_for('main.login'))
+
+    if filter_type == 'completed':
+        tasks = Task.query.filter_by(completed=True, user_id=g.user.id).all()
+    elif filter_type == 'pending':
+        tasks = Task.query.filter_by(completed=False, user_id=g.user.id).all()
+    else:
+        tasks = Task.query.filter_by(user_id=g.user.id).all()
+        
+    return render_template('index.html', tasks=tasks)

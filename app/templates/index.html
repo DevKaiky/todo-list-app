@@ -12,6 +12,8 @@
         <h1 class="text-center mb-4">Bem-vindo ao To-Do List</h1>
         <p class="text-center">Adicione, gerencie e organize suas tarefas aqui</p>
 
+        <!-- Botão de Logout --> <div class="text-end"> <a href="{{ url_for('main.logout') }}" class="btn btn-danger">Sair</a> </div>
+
         <!-- Contêiner para mensagens -->
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -25,7 +27,6 @@
             </div>
         {% endif %}
         {% endwith %}
-        
 
         <!-- Formulário para adicionar tarefas -->
         <div class="card shadow mb-4">
@@ -48,64 +49,63 @@
         <div class="export-tasks mb-4">
             <a href="{{ url_for('main.export_tasks') }}" class="btn btn-info">Exportar Tarefas para CSV</a>
         </div>
-        
 
         <!-- Filtros de Tarefas -->
-<div class="task-filters mb-4">
-    <a href="{{ url_for('main.filter_tasks', filter_type='all') }}">
-        <button class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
-            Todas
-        </button>
-    </a>
-    <a href="{{ url_for('main.filter_tasks', filter_type='completed') }}">
-        <button class="btn {% if filter_type == 'completed' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
-            Completas
-        </button>
-    </a>
-    <a href="{{ url_for('main.filter_tasks', filter_type='incomplete') }}">
-        <button class="btn {% if filter_type == 'incomplete' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
-            Incompletas
-        </button>
-    </a>
-</div>
+        <div class="task-filters mb-4">
+            <a href="{{ url_for('main.filter_tasks', filter_type='all') }}">
+                <button class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Todas
+                </button>
+            </a>
+            <a href="{{ url_for('main.filter_tasks', filter_type='completed') }}">
+                <button class="btn {% if filter_type == 'completed' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Completas
+                </button>
+            </a>
+            <a href="{{ url_for('main.filter_tasks', filter_type='incomplete') }}">
+                <button class="btn {% if filter_type == 'incomplete' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Incompletas
+                </button>
+            </a>
+        </div>
 
-<!-- Lista de tarefas -->
-<div class="card shadow">
-    <div class="card-body">
-        <h2 class="card-title">
-            Suas Tarefas - 
-            {% if filter_type == 'completed' %}
-                Completas
-            {% elif filter_type == 'incomplete' %}
-                Incompletas
-            {% else %}
-                Todas
-            {% endif %}
-        </h2>
-        <ul class="list-group">
-            {% for task in tasks %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span style="text-decoration: {% if task.completed %}line-through{% endif %};">
-                    <strong>{{ task.title }}</strong>: {{ task.description or "Sem Descrição" }}
-                </span>
-                <div>
-                    <form action="/complete-task/{{ task.id }}" method="POST" style="display: inline;">
-                        <button type="submit" 
-                            class="btn {% if task.completed %}btn-secondary{% else %}btn-success{% endif %} btn-sm">
-                            {% if task.completed %}Desmarcar{% else %}Concluir{% endif %}
-                        </button>
-                    </form>
-                    <a href="{{ url_for('main.edit_task', task_id=task.id) }}" class="btn btn-warning btn-sm">Editar</a>
-                    <form action="/delete-task/{{ task.id }}" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                    </form>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
+        <!-- Lista de tarefas -->
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title">
+                    Suas Tarefas - 
+                    {% if filter_type == 'completed' %}
+                        Completas
+                    {% elif filter_type == 'incomplete' %}
+                        Incompletas
+                    {% else %}
+                        Todas
+                    {% endif %}
+                </h2>
+                <ul class="list-group">
+                    {% for task in tasks %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span style="text-decoration: {% if task.completed %}line-through{% endif %};">
+                            <strong>{{ task.title }}</strong>: {{ task.description or "Sem Descrição" }}
+                        </span>
+                        <div>
+                            <form action="/complete-task/{{ task.id }}" method="POST" style="display: inline;">
+                                <button type="submit" 
+                                    class="btn {% if task.completed %}btn-secondary{% else %}btn-success{% endif %} btn-sm">
+                                    {% if task.completed %}Desmarcar{% else %}Concluir{% endif %}
+                                </button>
+                            </form>
+                            <a href="{{ url_for('main.edit_task', task_id=task.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                            <form action="/delete-task/{{ task.id }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
-</div>
-
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
@@ -118,7 +118,7 @@
                 e.preventDefault();
             }
         });
-    
+
         // Mostrar mensagem de confirmação ao concluir/excluir tarefas
         const taskButtons = document.querySelectorAll('form[action^="/complete-task"], form[action^="/delete-task"]');
         taskButtons.forEach(buttonForm => {
@@ -129,7 +129,7 @@
                 }
             });
         });
-    
+
         // Animação ao Concluir/Excluir Tarefa
         const listItems = document.querySelectorAll('.list-group-item');
         listItems.forEach(item => {
@@ -143,5 +143,4 @@
         });
     </script>
 </body>
-
 </html>
